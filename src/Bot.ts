@@ -19,7 +19,7 @@
 
 import { REST } from '@discordjs/rest';
 import { ApplicationCommandType, RESTPostAPIApplicationCommandsJSONBody, Routes } from 'discord-api-types/v9';
-import { ButtonInteraction, Client, CommandInteraction, DMChannel, Interaction, Message, MessageContextMenuInteraction, SelectMenuInteraction, UserContextMenuInteraction } from 'discord.js';
+import { ButtonInteraction, Client, CommandInteraction, DMChannel, Interaction, Message, MessageContextMenuInteraction, ModalSubmitInteraction, SelectMenuInteraction, UserContextMenuInteraction } from 'discord.js';
 import { Command } from './base/Command';
 import { DMCommand } from './base/DMCommand';
 import { MessageContextMenu } from './base/MessageContextMenu';
@@ -42,6 +42,7 @@ class BotManager {
     private message_contexts: { [name: string]: MessageContextMenu };
     private buttons: { [custom_id: string]: (interaction: ButtonInteraction) => void };
     private selects: { [custom_id: string]: (interaction: SelectMenuInteraction) => void };
+    private modals: { [custom_id: string]: (interaction: ModalSubmitInteraction) => void };
     private dmcommands: { [name: string]: DMCommand };
     private rest: REST;
     private client?: Client;
@@ -54,6 +55,7 @@ class BotManager {
         this.message_contexts = {};
         this.buttons = {};
         this.selects = {};
+        this.modals = {};
         this.dmcommands = {};
         this.rest = new REST({ version: '9' }).setToken(this.token);
     }
@@ -157,8 +159,8 @@ class BotManager {
                     type: ApplicationCommandType.User,
                     name: this.user_contexts[i].getName(),
                     name_localizations: I18n.getI18nDict(this.user_contexts[i].getI18nName()),
-                    default_member_permissions: this.message_contexts[i].getNeededPermissions()?.toString() ?? null,
-                    dm_permission: this.message_contexts[i].getDMPermission()
+                    default_member_permissions: this.user_contexts[i].getNeededPermissions()?.toString() ?? null,
+                    dm_permission: this.user_contexts[i].getDMPermission()
                 });
             }
         }
@@ -278,10 +280,14 @@ class BotManager {
             if (this.selects[interaction.customId.split(",")[0]] !== undefined) {
                 await this.callWithErrorHandler(this.selects[interaction.customId.split(",")[0]].bind(this.selects[interaction.customId.split(",")[0]]), interaction, "sélecteur");
             }
+        } else if (interaction.isModalSubmit()) {
+            if (this.modals[interaction.customId.split(",")[0]] !== undefined) {
+                await this.callWithErrorHandler(this.modals[interaction.customId.split(",")[0]].bind(this.modals[interaction.customId.split(",")[0]]), interaction, "modal");
+            }
         }
     }
 
-    async callWithErrorHandler<T extends CommandInteraction | ButtonInteraction | SelectMenuInteraction | UserContextMenuInteraction | MessageContextMenuInteraction>(fnc: (interaction: T) => void, interaction: T, type: string) {
+    async callWithErrorHandler<T extends CommandInteraction | ButtonInteraction | SelectMenuInteraction | ModalSubmitInteraction | UserContextMenuInteraction | MessageContextMenuInteraction>(fnc: (interaction: T) => void, interaction: T, type: string) {
         try {
             await fnc(interaction);
         } catch (e: any) {
@@ -319,6 +325,11 @@ class BotManager {
     registerSelect(customId: string, handler: (interaction: SelectMenuInteraction) => void) {
         this.logger.info("Registering select " + customId);
         this.selects[customId] = handler;
+    }
+
+    registerModal(customId: string, handler: (interaction: ModalSubmitInteraction) => void) {
+        this.logger.info("Registering modal " + customId);
+        this.modals[customId] = handler;
     }
 }
 
