@@ -33,7 +33,9 @@ export class GenIndexConsoleCommand extends ConsoleCommand {
             { file: "src/commands", type: "Command", name: "commands" },
             { file: "src/dmcommands", type: "DMCommand", name: "dmcommands" },
             { file: "src/consolecommands", type: "ConsoleCommand", name: "consolecommands" },
-            { file: "src/components", type: "Component", name: "components" }
+            { file: "src/components", type: "Component", name: "components" },
+            { file: "src/context/user", type: "UserContextMenu", name: "user_contexts" },
+            { file: "src/context/message", type: "MessageContextMenu", name: "message_contexts" }
         ];
     }
 
@@ -58,7 +60,7 @@ export class GenIndexConsoleCommand extends ConsoleCommand {
             const content = `// AUTO-GENERATED
 // Run "yarn craft gen:index" to update
 
-import { ${path.type} } from "../base/${path.type}";
+import { ${path.type} } from "${'../'.repeat((path.file.match(/\//g)||[]).length)}base/${path.type}";
 ${classes.map((n: string) => `import { ${n} } from "./${n}";`).join("\n")}
 
 export const ${path.name}: { new(): ${path.type} }[] = [

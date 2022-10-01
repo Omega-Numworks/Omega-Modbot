@@ -18,14 +18,18 @@
  */
 
 import { REST } from '@discordjs/rest';
-import { RESTPostAPIApplicationCommandsJSONBody, Routes } from 'discord-api-types/v9';
-import { ButtonInteraction, Client, CommandInteraction, DMChannel, Interaction, Message, SelectMenuInteraction } from 'discord.js';
+import { ApplicationCommandType, RESTPostAPIApplicationCommandsJSONBody, Routes } from 'discord-api-types/v9';
+import { ButtonInteraction, Client, CommandInteraction, DMChannel, Interaction, Message, MessageContextMenuInteraction, SelectMenuInteraction, UserContextMenuInteraction } from 'discord.js';
 import { Command } from './base/Command';
 import { DMCommand } from './base/DMCommand';
+import { MessageContextMenu } from './base/MessageContextMenu';
+import { UserContextMenu } from './base/UserContextMenu';
 import { commands } from './commands';
 import { components } from './components';
 import { HardConfig } from './config/HardConfig';
 import { SoftConfig } from './config/SoftConfig';
+import { message_contexts } from './context/message';
+import { user_contexts } from './context/user';
 import { dmcommands } from './dmcommands';
 import { I18n } from './utils/I18n';
 import { Log, Logger } from './utils/Logger';
@@ -34,6 +38,8 @@ class BotManager {
     private logger: Log;
     private token: string;
     private commands: { [name: string]: Command };
+    private user_contexts: { [name: string]: UserContextMenu };
+    private message_contexts: { [name: string]: MessageContextMenu };
     private buttons: { [custom_id: string]: (interaction: ButtonInteraction) => void };
     private selects: { [custom_id: string]: (interaction: SelectMenuInteraction) => void };
     private dmcommands: { [name: string]: DMCommand };
@@ -44,6 +50,8 @@ class BotManager {
         this.logger = Logger.getLogger("Bot");
         this.token = HardConfig.getBotToken();
         this.commands = {};
+        this.user_contexts = {};
+        this.message_contexts = {};
         this.buttons = {};
         this.selects = {};
         this.dmcommands = {};
@@ -98,9 +106,32 @@ class BotManager {
         }
     }
 
+    async loadContextMenu() {
+        this.logger.info("Loading context menu actions...");
+
+        for (const cuser_context of user_contexts) {
+            const user_context = new cuser_context();
+            this.logger.info("Loading user context menu action " + user_context.getName());
+            this.user_contexts[user_context.getName()] = user_context;
+            for (const o of user_context.getConfigs()) {
+                SoftConfig.registerConfig(o);
+            }
+        }
+
+        for (const cmessage_context of message_contexts) {
+            const message_context = new cmessage_context();
+            this.logger.info("Loading message context menu action " + message_context.getName());
+            this.message_contexts[message_context.getName()] = message_context;
+            for (const o of message_context.getConfigs()) {
+                SoftConfig.registerConfig(o);
+            }
+        }
+    }
+
     async registerCommands(guilds_id: string[]) {
         await this.loadDMCommands();
         await this.loadCommands();
+        await this.loadContextMenu();
         await this.loadComponents();
 
         const commands: RESTPostAPIApplicationCommandsJSONBody[] = [];
@@ -108,6 +139,7 @@ class BotManager {
         for (const i in this.commands) {
             if (this.commands[i].isDevCommand() && HardConfig.getDev() || !this.commands[i].isDevCommand()) {
                 commands.push({
+                    type: ApplicationCommandType.ChatInput,
                     name: this.commands[i].getName(),
                     name_localizations: I18n.getI18nDict(this.commands[i].getI18nName()),
                     description: I18n.getI18n(this.commands[i].getI18nDescription()),
@@ -115,6 +147,30 @@ class BotManager {
                     options: this.commands[i].getOptions(),
                     default_member_permissions: this.commands[i].getNeededPermissions()?.toString() ?? null,
                     dm_permission: this.commands[i].getDMPermission()
+                });
+            }
+        }
+
+        for (const i in this.user_contexts) {
+            if (this.user_contexts[i].isDevCommand() && HardConfig.getDev() || !this.user_contexts[i].isDevCommand()) {
+                commands.push({
+                    type: ApplicationCommandType.User,
+                    name: this.user_contexts[i].getName(),
+                    name_localizations: I18n.getI18nDict(this.user_contexts[i].getI18nName()),
+                    default_member_permissions: this.message_contexts[i].getNeededPermissions()?.toString() ?? null,
+                    dm_permission: this.message_contexts[i].getDMPermission()
+                });
+            }
+        }
+
+        for (const i in this.message_contexts) {
+            if (this.message_contexts[i].isDevCommand() && HardConfig.getDev() || !this.message_contexts[i].isDevCommand()) {
+                commands.push({
+                    type: ApplicationCommandType.Message,
+                    name: this.message_contexts[i].getName(),
+                    name_localizations: I18n.getI18nDict(this.message_contexts[i].getI18nName()),
+                    default_member_permissions: this.message_contexts[i].getNeededPermissions()?.toString() ?? null,
+                    dm_permission: this.message_contexts[i].getDMPermission()
                 });
             }
         }
@@ -192,6 +248,28 @@ class BotManager {
 
                 await this.callWithErrorHandler(this.commands[interaction.commandName].execute.bind(this.commands[interaction.commandName]), interaction, "commande");
             }
+        } else if (interaction.isUserContextMenu()) {
+            if (this.user_contexts[interaction.commandName] !== undefined) {
+                if (this.user_contexts[interaction.commandName].isReservedToGod()) {
+                    if (!HardConfig.getDiscordGods().includes(interaction.user.id)) {
+                        interaction.reply({ content: I18n.getI18n('bot.error.god', interaction.locale), ephemeral: true });
+                        return;
+                    }
+                }
+
+                await this.callWithErrorHandler(this.user_contexts[interaction.commandName].execute.bind(this.user_contexts[interaction.commandName]), interaction, "action utilisateur");
+            }
+        } else if (interaction.isMessageContextMenu()) {
+            if (this.message_contexts[interaction.commandName] !== undefined) {
+                if (this.message_contexts[interaction.commandName].isReservedToGod()) {
+                    if (!HardConfig.getDiscordGods().includes(interaction.user.id)) {
+                        interaction.reply({ content: I18n.getI18n('bot.error.god', interaction.locale), ephemeral: true });
+                        return;
+                    }
+                }
+
+                await this.callWithErrorHandler(this.message_contexts[interaction.commandName].execute.bind(this.message_contexts[interaction.commandName]), interaction, "action message");
+            }
         } else if (interaction.isButton()) {
             if (this.buttons[interaction.customId.split(",")[0]] !== undefined) {
                 await this.callWithErrorHandler(this.buttons[interaction.customId.split(",")[0]].bind(this.buttons[interaction.customId.split(",")[0]]), interaction, "boutton");
@@ -203,11 +281,11 @@ class BotManager {
         }
     }
 
-    async callWithErrorHandler<T extends CommandInteraction | ButtonInteraction | SelectMenuInteraction>(fnc: (interaction: T) => void, interaction: T, type: string) {
+    async callWithErrorHandler<T extends CommandInteraction | ButtonInteraction | SelectMenuInteraction | UserContextMenuInteraction | MessageContextMenuInteraction>(fnc: (interaction: T) => void, interaction: T, type: string) {
         try {
             await fnc(interaction);
         } catch (e: any) {
-            const name = interaction instanceof CommandInteraction ? interaction.commandName : interaction.customId.split(",")[0];
+            const name = (interaction instanceof CommandInteraction || interaction instanceof UserContextMenuInteraction || interaction instanceof MessageContextMenuInteraction) ? interaction.commandName : interaction.customId.split(",")[0];
 
             this.logger.error("Error when handling " + type + " \"" + name + "\"", e as Error);
             try {
