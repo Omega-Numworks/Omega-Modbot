@@ -18,10 +18,9 @@
  */
 
 import { LocaleString } from 'discord-api-types/v9';
-import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, SelectMenuInteraction, WebhookEditMessageOptions } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, Permissions, SelectMenuInteraction, WebhookEditMessageOptions } from 'discord.js';
 import { Command } from '../base/Command';
 import { Bot } from '../Bot';
-import { HardConfig } from '../config/HardConfig';
 import { ServerConfig } from '../config/ServerConfig';
 import { I18n } from '../utils/I18n';
 
@@ -34,6 +33,10 @@ export class ConfigCommand extends Command {
 
     getName() {
         return "config";
+    }
+
+    getNeededPermissions(): bigint | null {
+        return Permissions.FLAGS.MANAGE_GUILD
     }
 
     async ephemeralButton(interaction: ButtonInteraction) {
@@ -61,12 +64,6 @@ export class ConfigCommand extends Command {
     async validateCall(interaction: CommandInteraction | SelectMenuInteraction | ButtonInteraction): Promise<boolean> {
         if (interaction.guildId === null) {
             await interaction.reply({ content: I18n.getI18n('command.config.error.dm', I18n.getLang(interaction)), ephemeral: true });
-            return false;
-        }
-
-        if (!interaction.memberPermissions?.any('MANAGE_GUILD', true)
-            && !HardConfig.getDiscordGods().includes(interaction.user.id)) {
-            await interaction.reply({ content: I18n.getI18n('command.config.error.permission', I18n.getLang(interaction)), ephemeral: true });
             return false;
         }
 

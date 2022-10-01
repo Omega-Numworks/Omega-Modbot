@@ -112,7 +112,9 @@ class BotManager {
                     name_localizations: I18n.getI18nDict(this.commands[i].getI18nName()),
                     description: I18n.getI18n(this.commands[i].getI18nDescription()),
                     description_localizations: I18n.getI18nDict(this.commands[i].getI18nDescription()),
-                    options: this.commands[i].getOptions()
+                    options: this.commands[i].getOptions(),
+                    default_member_permissions: this.commands[i].getNeededPermissions()?.toString() ?? null,
+                    dm_permission: this.commands[i].getDMPermission()
                 });
             }
         }
