@@ -1,0 +1,28 @@
+name,fr,en-US
+locale.name,Français,English (United States)
+locale.flag,🇫🇷,🇺🇸
+,,
+bot.error,Une erreur est survenue lors du traitement de votre {type}.,An error occured while handling your {type}.
+bot.error.god,Vous n'êtes pas un Dieux.,You are not a god.
+bot.error.deleterights,Vous n'avez pas les droits pour supprimer ce message.,You don't have the rights to delete this message.
+,,
+command.about.name,apropos,about
+command.about.description,En apprendre plus sur Omega-Modbot.,Learn more about Omega-Modbot.
+command.about.embed.description,Bot Discord de modération Omega.,Omega discord moderation bot.
+command.about.embed.license.title,Licence,License
+command.about.embed.license.text,Omega-Modbot est distribué sous licence [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.fr.html).,Omega-Modbot is licensed under [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
+,,
+command.ping.title,ping,ping
+command.ping.description,Vérifie si Omega-Modbot est vivant.,Checks if Omega-Modbot is alive.
+command.ping.pong,Pong !,Pong!
+,,
+command.config.title,config,config
+command.config.description,Modifier la configuration du serveur.,Edit server config.
+command.config.error.dm,Cette commande ne peut pas être utilisée en DM.,This command can't be used in DM.
+command.config.error.permission,Vous n'avez pas les permissions nécessaires pour utiliser cette commande.,You don't have the required permissions.
+,,
+command.config.reply.title,Configuration,Configuration
+command.config.reply.description,Éditer la configuration serveur,Edit server config
+command.config.reply.language,Langue,Language
+command.config.reply.ephemeral.true,Désactiver les réponses publiques,Disable public replies
+command.config.reply.ephemeral.false,Activer les réponses publiques,Enable public replies
