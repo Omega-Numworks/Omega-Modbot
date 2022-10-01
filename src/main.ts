@@ -23,6 +23,7 @@ import { ServerConfig } from './config/ServerConfig';
 import { SoftConfig } from './config/SoftConfig';
 import { UptimeRobot } from './UptimeRobot';
 import { Logger } from './utils/Logger';
+import { ORM } from './utils/ORM';
 import { LEGIBOT_DEV, LEGIBOT_HASH, LEGIBOT_VERSION } from './version';
 
 export const main = async () => {
@@ -38,6 +39,7 @@ export const main = async () => {
         ur.start();
     }
 
+    await ORM.init();
     await Bot.initClient();
     Bot.start();
 };

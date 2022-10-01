@@ -57,6 +57,10 @@ class HardConfigManager {
     getUptimeRobotIP(): string {
         return process.env.UPTIMEROBOT_IP ?? '0.0.0.0';
     }
+
+    getDatabaseURL(): string {
+        return process.env.DATABASE_URL ?? 'sqlite::memory:'
+    }
 }
 
 export const HardConfig = new HardConfigManager();
