@@ -4,6 +4,7 @@
         "**.json",
         "**.sqlite",
         "src/**/index.ts",
+        "src/i18n.ts",
         "src/version.ts"
     ],
     "execMap": {

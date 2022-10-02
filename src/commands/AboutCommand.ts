@@ -20,7 +20,7 @@
 import { CommandInteraction, MessageAttachment, MessageEmbed } from 'discord.js';
 import { Command } from '../base/Command';
 import { I18n } from '../utils/I18n';
-import { LEGIBOT_DEV, LEGIBOT_HASH, LEGIBOT_REPOSITORY, LEGIBOT_VERSION } from '../version';
+import { OMEGA_MODBOT_DEV, OMEGA_MODBOT_HASH, OMEGA_MODBOT_REPOSITORY, OMEGA_MODBOT_VERSION } from '../version';
 
 export class AboutCommand extends Command {
     constructor() {
@@ -35,14 +35,14 @@ export class AboutCommand extends Command {
         return interaction.reply({
             embeds: [
                 new MessageEmbed()
-                    .setTitle(`**Omega-Modbot ${LEGIBOT_VERSION}${LEGIBOT_DEV ? '-dev' : ''} (${LEGIBOT_HASH})**\n`)
-                    .setURL(LEGIBOT_REPOSITORY)
+                    .setTitle(`**Omega-Modbot ${OMEGA_MODBOT_VERSION}${OMEGA_MODBOT_DEV ? '-dev' : ''} (${OMEGA_MODBOT_HASH})**\n`)
+                    .setURL(OMEGA_MODBOT_REPOSITORY)
                     .setThumbnail('attachment://logo.png')
                     .setDescription(I18n.getI18n("command.about.embed.description", I18n.getLang(interaction)))
                     .addField(
                         I18n.getI18n("command.about.embed.license.title", I18n.getLang(interaction)),
                         I18n.getI18n("command.about.embed.license.text", I18n.getLang(interaction)))
-            ], files: [new MessageAttachment(`doc/logo/logo-transparent${LEGIBOT_DEV ? '-dev' : ''}.png`, 'logo.png')], ephemeral: true
+            ], files: [new MessageAttachment(`doc/logo/logo-transparent${OMEGA_MODBOT_DEV ? '-dev' : ''}.png`, 'logo.png')], ephemeral: true
         });
     }
 }
