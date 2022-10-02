@@ -1,4 +1,4 @@
-import { ButtonInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, MessageSelectOptionData, Modal, ModalActionRowComponent, ModalSubmitInteraction, SelectMenuInteraction, Snowflake, TextInputComponent, UserContextMenuInteraction } from "discord.js";
+import { ButtonInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, MessageSelectOptionData, Modal, ModalActionRowComponent, ModalSubmitInteraction, Permissions, SelectMenuInteraction, Snowflake, TextInputComponent, UserContextMenuInteraction } from "discord.js";
 import { MessageButtonStyles, TextInputStyles } from "discord.js/typings/enums";
 import { UserContextMenu } from "../../base/UserContextMenu";
 import { Bot } from "../../Bot";
@@ -44,6 +44,14 @@ export class ModerateUCM extends UserContextMenu {
 
     getName() {
         return "moderate";
+    }
+
+    getDMPermission(): boolean {
+        return false;
+    }
+
+    getNeededPermissions(): bigint | null {
+        return Permissions.FLAGS.BAN_MEMBERS | Permissions.FLAGS.KICK_MEMBERS | Permissions.FLAGS.MODERATE_MEMBERS;
     }
 
     private async generateReply(lang: string, id: Snowflake, selected_rules?: number[], selected_sanction?: string) {
@@ -114,21 +122,40 @@ export class ModerateUCM extends UserContextMenu {
 
         const rules = await Rule.findAll({ where: { id: selected_rules } });
 
-        interaction.reply({ content: 'done.', ephemeral: true });
+        await interaction.reply({ content: 'done.', ephemeral: true });
 
         const channel = await interaction.client.channels.fetch(SoftConfig.get('moderate.logchannel', ''));
         const user = await interaction.client.users.fetch(discord_id);
         const moderator = interaction.user;
+        let error = false;
+
+        try {
+            await user.send({
+                content:
+                    `Un message que vous avez envoyé sur un des serveurs Omega vous a valu la sanction suivante: ${(sanctions as any)[ss] ?? '????'}\n` +
+                    `Cette sanction est appliquée au titre de la / des règle(s) suivante(s):\n` +
+                    `${'```\n'}${rules.map((value: Rule) => `${value.identifier}. ${value.content}`).join('\n')}${'\n```'}\n` +
+                    `Commentaire de la modération:\n` +
+                    (public_comment.length === 0 ? '*Pas de commentaire*' : (public_comment.split('\n').map((v) => '> ' + v).join('\n'))) + '\n' +
+                    `Pour toute plainte ou contestation, veluillez contacter @Quentin#0793.`
+            });
+        } catch (e: any) { error = true }
 
         if (channel?.isText()) {
-            channel.send({
+            await channel.send({
                 embeds: [
                     new MessageEmbed()
                         .setTitle("Mod Action")
                         .setDescription(`L'utilisateur <@${user.id}> (${user.id}) a été sanctionné.\n**Sanction:** ${(sanctions as any)[ss] ?? '????'}`)
                         .addField("Règle(s) concernée(s)", `${'```\n'}${rules.map((value: Rule) => `${value.identifier}. ${value.content}`).join('\n')}${'\n```'}`)
-                        .addField("Commentaire", comment.split('\n').map((v) => '> ' + v).join('\n'))
-                        .addField("Commentaire publique", public_comment.split('\n').map((v) => '> ' + v).join('\n'))
+                        .addField("Commentaire", public_comment.length === 0 ? '*Pas de commentaire*' : comment.split('\n').map((v) => '> ' + v).join('\n'))
+                        .addField("Commentaire publique", public_comment.length === 0 ? '*Pas de commentaire*' : public_comment.split('\n').map((v) => '> ' + v).join('\n'))
+                        .addFields(error ? [
+                            {
+                                name: "Erreur",
+                                value: "Impossible de DM l'utilisateur"
+                            }
+                        ]: [])
                         .setAuthor({
                             name: moderator.tag,
                             iconURL: moderator.avatarURL() ?? undefined,
@@ -136,20 +163,8 @@ export class ModerateUCM extends UserContextMenu {
                         })
                         .setColor('#bd3437')
                 ]
-            })
-        }
-
-        try {
-            user.send({
-                content:
-                    `Un message que vous avez envoyé sur un des serveurs Omega vous a valu la sanction suivante: ${(sanctions as any)[ss] ?? '????'}\n` +
-                    `Cette sanction est appliquée au titre de la / des règle(s) suivante(s):\n` +
-                    `${'```\n'}${rules.map((value: Rule) => `${value.identifier}. ${value.content}`).join('\n')}${'\n```'}\n` +
-                    `Commentaire de la modération:\n` +
-                    public_comment.split('\n').map((v) => '> ' + v).join('\n') + '\n' +
-                    `Pour toute plainte ou contestation, veluillez contacter @Quentin#0793.`
             });
-        } catch (e: any) { }
+        }
 
         for (const guildid of SoftConfig.get('moderate.servers', '').split(',')) {
             const guild = await interaction.client.guilds.fetch(guildid);
@@ -167,7 +182,7 @@ export class ModerateUCM extends UserContextMenu {
                 case "to":
                     try {
                         const member = await guild.members.fetch(user.id);
-                        await member.timeout(parseInt(selected_sanction_duration) * 1000);
+                        await member.timeout(parseInt(selected_sanction_duration) * 1000, public_comment);
                     } catch (e: any) {
                         await guild.bans.create(user.id, { reason: public_comment });
                     }

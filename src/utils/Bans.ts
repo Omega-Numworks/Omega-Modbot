@@ -34,6 +34,7 @@ class BansManager {
         const actions = await Action.findAll({
             where: {
                 unbanned: false,
+                type: ['ban', 'to']
             },
             group: ['discordId'],
             attributes: ['discordId', [sequelize.fn('max', sequelize.col('until')), 'unt']],
@@ -61,7 +62,8 @@ class BansManager {
                 unbanned: true
             }, {
                 where: {
-                    'discordId': action.discordId
+                    discordId: action.discordId,
+                    type: ['ban', 'to']
                 }
             });
         }
