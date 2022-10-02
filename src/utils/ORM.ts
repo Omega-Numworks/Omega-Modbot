@@ -20,17 +20,21 @@
 import { Sequelize } from 'sequelize';
 import { HardConfig } from '../config/HardConfig';
 import { associateEntities, initEntities } from '../entities';
-import { Logger } from './Logger';
+import { Log, Logger } from './Logger';
 
 class ORMManager {
     private sequelize: Sequelize
+    private logger: Log
 
     constructor() {
-        this.sequelize = new Sequelize(HardConfig.getDatabaseURL())
+        this.logger = Logger.getLogger('ORM');
+        this.sequelize = new Sequelize(HardConfig.getDatabaseURL(), {
+            logging: msg => this.logger.debug(msg)
+        })
     }
 
     async init() {
-        Logger.getLogger('ORM').info("Initializing ORM...");
+        this.logger.info("Initializing ORM...");
         initEntities(this.sequelize);
         associateEntities(this.sequelize);
         await this.sequelize.sync();
