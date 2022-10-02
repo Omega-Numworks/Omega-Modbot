@@ -61,6 +61,10 @@ class Log {
         }
     }
 
+    public debug(message: string): void {
+        this.write(message, 'DBUG', console.info);
+    }
+
     public info(message: string): void {
         this.write(message, 'INFO', console.info);
     }
