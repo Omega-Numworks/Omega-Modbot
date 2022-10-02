@@ -13,10 +13,11 @@ export class Action extends Model<InferAttributes<Action>, InferCreationAttribut
     declare moderatorId: Snowflake;
 
     declare type: ActionType;
-    declare duration: number;
+    declare until: Date;
+    declare unbanned: CreationOptional<boolean>;
 
-    declare comment: string;
-    declare publicComment: string;
+    declare comment: CreationOptional<string>;
+    declare publicComment: CreationOptional<string>;
 
     declare getRules: BelongsToManyGetAssociationsMixin<Rule>;
     declare setRules: BelongsToManySetAssociationsMixin<Rule, number>;
@@ -46,14 +47,20 @@ export const initAction = (sequelize: Sequelize) => {
         type: {
             type: DataTypes.STRING(64)
         },
-        duration: {
-            type: DataTypes.INTEGER
+        until: {
+            type: DataTypes.DATE
+        },
+        unbanned: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
         },
         comment: {
-            type: DataTypes.STRING(128)
+            type: DataTypes.STRING(128),
+            defaultValue: ''
         },
         publicComment: {
-            type: DataTypes.STRING(128)
+            type: DataTypes.STRING(128),
+            defaultValue: ''
         },
     }, {
         sequelize,
