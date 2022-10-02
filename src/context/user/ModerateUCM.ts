@@ -1,10 +1,12 @@
-import { ButtonInteraction, MessageActionRow, MessageButton, MessageSelectMenu, MessageSelectOptionData, Modal, ModalActionRowComponent, ModalSubmitInteraction, SelectMenuInteraction, Snowflake, TextInputComponent, UserContextMenuInteraction } from "discord.js";
+import { ButtonInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, MessageSelectOptionData, Modal, ModalActionRowComponent, ModalSubmitInteraction, SelectMenuInteraction, Snowflake, TextInputComponent, UserContextMenuInteraction } from "discord.js";
 import { MessageButtonStyles, TextInputStyles } from "discord.js/typings/enums";
 import { UserContextMenu } from "../../base/UserContextMenu";
 import { Bot } from "../../Bot";
+import { SoftConfig } from "../../config/SoftConfig";
 import { Action, ActionType } from "../../entities/Action";
 import { Rule } from "../../entities/Rule";
 import { I18n } from "../../utils/I18n";
+import { ORM } from "../../utils/ORM";
 
 const sanctions = {
     'warn:0': 'Warning',
@@ -18,10 +20,10 @@ const sanctions = {
     'to:172800': 'Timeout 2 days',
     'to:604800': 'Timeout 1 week',
     'to:1209600': 'Timeout 2 weeks',
-    'to:2419200': 'Timeout 1 month',
-    'to:4838400': 'Timeout 2 months',
-    'to:7257600': 'Timeout 3 months',
-    'ban:0': 'Ban'
+    'ban:2419200': 'Ban 1 month',
+    'ban:4838400': 'Ban 2 months',
+    'ban:7257600': 'Ban 3 months',
+    'ban:3124202400': 'Ban'
 };
 
 export class ModerateUCM extends UserContextMenu {
@@ -31,6 +33,13 @@ export class ModerateUCM extends UserContextMenu {
         Bot.registerSelect('cms', this.sanctionChanged.bind(this));
         Bot.registerButton('cmc', this.submitButton.bind(this))
         Bot.registerModal('cmm', this.submitModal.bind(this))
+    }
+
+    getConfigs(): string[] {
+        return [
+            'moderate.logchannel',
+            'moderate.servers'
+        ]
     }
 
     getName() {
@@ -83,6 +92,7 @@ export class ModerateUCM extends UserContextMenu {
     }
 
     async submitModal(interaction: ModalSubmitInteraction) {
+        console.log(interaction.customId)
         const [, did, sr, ss] = interaction.customId.split(',')
         const discord_id: Snowflake = did;
         const selected_rules: number[] = sr.split(':').map((x) => parseInt(x));
@@ -90,19 +100,87 @@ export class ModerateUCM extends UserContextMenu {
         const comment = interaction.fields.getTextInputValue('comment')
         const public_comment = interaction.fields.getTextInputValue('public_comment')
 
-        const action = await Action.create({
-            discordId: discord_id,
-            moderatorId: interaction.user.id,
-            type: selected_sanction as ActionType,
-            duration: parseInt(selected_sanction_duration) * 1000,
-            comment: comment,
-            publicComment: public_comment
-        }).catch(e => console.error(e));
-        await (action as Action).setRules(selected_rules);
-        interaction.reply({content: 'done.'});
+        await ORM.get().transaction(async (t) => {
+            const action = await Action.create({
+                discordId: discord_id,
+                moderatorId: interaction.user.id,
+                type: selected_sanction as ActionType,
+                until: new Date(Date.now() + parseInt(selected_sanction_duration) * 1000),
+                comment: comment,
+                publicComment: public_comment
+            }, { transaction: t });
+            await action.setRules(selected_rules, { transaction: t });
+        });
+
+        const rules = await Rule.findAll({ where: { id: selected_rules } });
+
+        interaction.reply({ content: 'done.', ephemeral: true });
+
+        const channel = await interaction.client.channels.fetch(SoftConfig.get('moderate.logchannel', ''));
+        const user = await interaction.client.users.fetch(discord_id);
+        const moderator = interaction.user;
+
+        if (channel?.isText()) {
+            channel.send({
+                embeds: [
+                    new MessageEmbed()
+                        .setTitle("Mod Action")
+                        .setDescription(`L'utilisateur <@${user.id}> (${user.id}) a été sanctionné.\n**Sanction:** ${(sanctions as any)[ss] ?? '????'}`)
+                        .addField("Règle(s) concernée(s)", `${'```\n'}${rules.map((value: Rule) => `${value.identifier}. ${value.content}`).join('\n')}${'\n```'}`)
+                        .addField("Commentaire", comment.split('\n').map((v) => '> ' + v).join('\n'))
+                        .addField("Commentaire publique", public_comment.split('\n').map((v) => '> ' + v).join('\n'))
+                        .setAuthor({
+                            name: moderator.tag,
+                            iconURL: moderator.avatarURL() ?? undefined,
+                            url: `https://discord.com/channels/@me/${moderator.id}`
+                        })
+                        .setColor('#bd3437')
+                ]
+            })
+        }
+
+        try {
+            user.send({
+                content:
+                    `Un message que vous avez envoyé sur un des serveurs Omega vous a valu la sanction suivante: ${(sanctions as any)[ss] ?? '????'}\n` +
+                    `Cette sanction est appliquée au titre de la / des règle(s) suivante(s):\n` +
+                    `${'```\n'}${rules.map((value: Rule) => `${value.identifier}. ${value.content}`).join('\n')}${'\n```'}\n` +
+                    `Commentaire de la modération:\n` +
+                    public_comment.split('\n').map((v) => '> ' + v).join('\n') + '\n' +
+                    `Pour toute plainte ou contestation, veluillez contacter @Quentin#0793.`
+            });
+        } catch (e: any) { }
+
+        for (const guildid of SoftConfig.get('moderate.servers', '').split(',')) {
+            const guild = await interaction.client.guilds.fetch(guildid);
+
+            switch (selected_sanction as ActionType) {
+                case "ban":
+                    await guild.bans.create(user.id, { reason: public_comment });
+                    break;
+                case "kick":
+                    try {
+                        const member = await guild.members.fetch(user.id);
+                        await member.kick(public_comment);
+                    } catch (e: any) { }
+                    break;
+                case "to":
+                    try {
+                        const member = await guild.members.fetch(user.id);
+                        await member.timeout(parseInt(selected_sanction_duration) * 1000);
+                    } catch (e: any) {
+                        await guild.bans.create(user.id, { reason: public_comment });
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
     }
 
     async submitButton(interaction: ButtonInteraction) {
+        console.log(interaction.customId)
         const [, did, sr, ss] = interaction.customId.split(',')
 
         const discord_id: Snowflake = did;
@@ -132,6 +210,7 @@ export class ModerateUCM extends UserContextMenu {
     }
 
     async ruleChanged(interaction: SelectMenuInteraction) {
+        console.log(interaction.customId)
         await interaction.deferUpdate();
         const [, did, , ss] = interaction.customId.split(',')
 
@@ -143,6 +222,7 @@ export class ModerateUCM extends UserContextMenu {
     }
 
     async sanctionChanged(interaction: SelectMenuInteraction) {
+        console.log(interaction.customId)
         await interaction.deferUpdate();
         const [, did, sr,] = interaction.customId.split(',')
 
