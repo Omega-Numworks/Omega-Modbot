@@ -1,8 +1,8 @@
 import { Snowflake } from 'discord.js';
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, NonAttribute, Sequelize } from 'sequelize';
+import { BelongsToManyAddAssociationMixin, BelongsToManyAddAssociationsMixin, BelongsToManyCountAssociationsMixin, BelongsToManyCreateAssociationMixin, BelongsToManyGetAssociationsMixin, BelongsToManyHasAssociationMixin, BelongsToManyHasAssociationsMixin, BelongsToManyRemoveAssociationMixin, BelongsToManyRemoveAssociationsMixin, BelongsToManySetAssociationsMixin, CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, NonAttribute, Sequelize } from 'sequelize';
 import { Rule } from './Rule';
 
-type ActionType = 'warn' | 'kick' | 'ban' | 'timeout';
+export type ActionType = 'warn' | 'kick' | 'ban' | 'to';
 
 export class Action extends Model<InferAttributes<Action>, InferCreationAttributes<Action>> {
     declare id: CreationOptional<number>;
@@ -13,7 +13,22 @@ export class Action extends Model<InferAttributes<Action>, InferCreationAttribut
     declare moderatorId: Snowflake;
 
     declare type: ActionType;
-    declare duration: number;
+    declare until: Date;
+    declare unbanned: CreationOptional<boolean>;
+
+    declare comment: CreationOptional<string>;
+    declare publicComment: CreationOptional<string>;
+
+    declare getRules: BelongsToManyGetAssociationsMixin<Rule>;
+    declare setRules: BelongsToManySetAssociationsMixin<Rule, number>;
+    declare addRules: BelongsToManyAddAssociationsMixin<Rule, number>;
+    declare addRule: BelongsToManyAddAssociationMixin<Rule, number>;
+    declare createRule: BelongsToManyCreateAssociationMixin<Rule>;
+    declare removeRule: BelongsToManyRemoveAssociationMixin<Rule, number>;
+    declare removeRules: BelongsToManyRemoveAssociationsMixin<Rule, number>;
+    declare hasRule: BelongsToManyHasAssociationMixin<Rule, number>;
+    declare hasRules: BelongsToManyHasAssociationsMixin<Rule, number>;
+    declare countRules: BelongsToManyCountAssociationsMixin;
 }
 
 export const initAction = (sequelize: Sequelize) => {
@@ -32,9 +47,21 @@ export const initAction = (sequelize: Sequelize) => {
         type: {
             type: DataTypes.STRING(64)
         },
-        duration: {
-            type: DataTypes.INTEGER
-        }
+        until: {
+            type: DataTypes.DATE
+        },
+        unbanned: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        comment: {
+            type: DataTypes.STRING(128),
+            defaultValue: ''
+        },
+        publicComment: {
+            type: DataTypes.STRING(128),
+            defaultValue: ''
+        },
     }, {
         sequelize,
         tableName: 'actions'

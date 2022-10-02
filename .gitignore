@@ -10,3 +10,4 @@ dist/
 src/version.ts
 src/i18n.ts
 src/.~*
+*.db

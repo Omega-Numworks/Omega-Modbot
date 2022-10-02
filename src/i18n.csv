@@ -12,11 +12,11 @@ command.about.embed.description,Bot Discord de modération Omega.,Omega discord 
 command.about.embed.license.title,Licence,License
 command.about.embed.license.text,Omega-Modbot est distribué sous licence [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.fr.html).,Omega-Modbot is licensed under [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 ,,
-command.ping.title,ping,ping
+command.ping.name,ping,ping
 command.ping.description,Vérifie si Omega-Modbot est vivant.,Checks if Omega-Modbot is alive.
 command.ping.pong,Pong !,Pong!
 ,,
-command.config.title,config,config
+command.config.name,config,config
 command.config.description,Modifier la configuration du serveur.,Edit server config.
 command.config.error.dm,Cette commande ne peut pas être utilisée en DM.,This command can't be used in DM.
 command.config.error.permission,Vous n'avez pas les permissions nécessaires pour utiliser cette commande.,You don't have the required permissions.
@@ -26,3 +26,12 @@ command.config.reply.description,Éditer la configuration serveur,Edit server co
 command.config.reply.language,Langue,Language
 command.config.reply.ephemeral.true,Désactiver les réponses publiques,Disable public replies
 command.config.reply.ephemeral.false,Activer les réponses publiques,Enable public replies
+,,
+context_menu.moderate.name,Modérer,Moderate
+context_menu.moderate.reply.content,"Veuillez sélectionnez une/des règle(s) et une sanction, puis valider.","Please select a/some rule(s) and a sanction, then submit."
+context_menu.moderate.reply.rule,Sélectionnez une règle,Select a rule
+context_menu.moderate.reply.sanction,Sélectionnez une sanction,Select a sanction
+context_menu.moderate.reply.submit,Valider,Submit
+context_menu.moderate.modal.comment,Commentaire,Comment
+context_menu.moderate.modal.public_comment,Commentaire publique,Public comment
+context_menu.moderate.modal.title,Plus d'informations...,More infos...

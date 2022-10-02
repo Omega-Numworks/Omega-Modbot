@@ -47,10 +47,10 @@ export class GenVersionConsoleCommand extends ConsoleCommand {
     async execute(args: string[]): Promise<void> {
         const pkg = JSON.parse(readFileSync("./package.json").toString("utf-8"));
         this.values = {
-            LEGIBOT_HASH: execSync('git rev-parse HEAD').toString().trim().slice(0,7),
-            LEGIBOT_VERSION: pkg.version,
-            LEGIBOT_DEV: execSync('git tag --contains HEAD').toString().trim() === "",
-            LEGIBOT_REPOSITORY: pkg.repository
+            OMEGA_MODBOT_HASH: execSync('git rev-parse HEAD').toString().trim().slice(0,7),
+            OMEGA_MODBOT_VERSION: pkg.version,
+            OMEGA_MODBOT_DEV: execSync('git tag --contains HEAD').toString().trim() === "",
+            OMEGA_MODBOT_REPOSITORY: pkg.repository
         }
 
         let content = "// AUTO GENERATED\n";

@@ -24,11 +24,11 @@ import { SoftConfig } from './config/SoftConfig';
 import { UptimeRobot } from './UptimeRobot';
 import { Logger } from './utils/Logger';
 import { ORM } from './utils/ORM';
-import { LEGIBOT_DEV, LEGIBOT_HASH, LEGIBOT_VERSION } from './version';
+import { OMEGA_MODBOT_DEV, OMEGA_MODBOT_HASH, OMEGA_MODBOT_VERSION } from './version';
 
 export const main = async () => {
-    Logger.getLogger('Main').info(`Starting Omega-Modbot ${LEGIBOT_VERSION}${LEGIBOT_DEV ? '-dev' : ''} (${LEGIBOT_HASH})`);
-    if (LEGIBOT_DEV)
+    Logger.getLogger('Main').info(`Starting Omega-Modbot ${OMEGA_MODBOT_VERSION}${OMEGA_MODBOT_DEV ? '-dev' : ''} (${OMEGA_MODBOT_HASH})`);
+    if (OMEGA_MODBOT_DEV)
         Logger.getLogger('Main').warn("This is a developpement build of Omega-Modbot!");
 
     SoftConfig.load();

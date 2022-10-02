@@ -31,6 +31,7 @@ import { SoftConfig } from './config/SoftConfig';
 import { message_contexts } from './context/message';
 import { user_contexts } from './context/user';
 import { dmcommands } from './dmcommands';
+import { Bans } from './utils/Bans';
 import { I18n } from './utils/I18n';
 import { Log, Logger } from './utils/Logger';
 
@@ -199,6 +200,7 @@ class BotManager {
         await this.registerCommands(guilds_id);
 
         this.logger.info("Logged in as " + this?.client?.user?.tag + ".");
+        await Bans.init();
     }
 
     async onMessage(message: Message) {
@@ -311,6 +313,10 @@ class BotManager {
         this.client.on('ready', this.onReady.bind(this));
         this.client.on('interactionCreate', this.onInteraction.bind(this));
         this.client.on('messageCreate', this.onMessage.bind(this));
+    }
+
+    public getClient(): Client {
+        return this.client as Client;
     }
 
     start() {
