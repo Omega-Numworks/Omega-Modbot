@@ -1,0 +1,13 @@
+config/*.json
+node_modules
+cache.json
+*.log
+.env
+db.sqlite
+.husky
+.eslintcache
+dist/
+src/version.ts
+src/i18n.ts
+src/.~*
+*.db
