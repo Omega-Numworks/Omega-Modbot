@@ -1,3 +1,22 @@
+/**
+ * Copyright © 2022 Maxime Friess <M4x1me@pm.me>
+ *
+ * This file is part of Omega-Modbot.
+ *
+ * Omega-Modbot is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Omega-Modbot is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Omega-Modbot.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { ButtonInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, MessageSelectOptionData, Modal, ModalActionRowComponent, ModalSubmitInteraction, Permissions, SelectMenuInteraction, Snowflake, TextInputComponent, UserContextMenuInteraction } from "discord.js";
 import { MessageButtonStyles, TextInputStyles } from "discord.js/typings/enums";
 import { UserContextMenu } from "../../base/UserContextMenu";
@@ -191,7 +210,6 @@ export class ModerateUCM extends UserContextMenu {
                     break;
             }
         }
-
     }
 
     async submitButton(interaction: ButtonInteraction) {
@@ -217,7 +235,7 @@ export class ModerateUCM extends UserContextMenu {
                         .setLabel(I18n.getI18n('context_menu.moderate.modal.public_comment', interaction))
                         .setStyle(TextInputStyles.PARAGRAPH)
                         .setMaxLength(128)
-                ),
+                )
             )
             .setCustomId(`cmm,${discord_id},${selected_rules?.join(':') ?? ''},${selected_sanction ?? ''}`)
             .setTitle(I18n.getI18n('context_menu.moderate.modal.title', interaction))
