@@ -17,7 +17,7 @@
  * along with Omega-Modbot.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ButtonInteraction, MessageButton } from "discord.js";
+import { ButtonInteraction } from "discord.js";
 import { Component, ComponentType } from "./Component";
 
 export class Button extends Component {
@@ -47,9 +47,5 @@ export class Button extends Component {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(interaction: ButtonInteraction): Promise<void> {
         throw new TypeError('Abstract method "execute" of class "Button" cannot be used directly');
-    }
-
-    static generate(): MessageButton {
-        throw new TypeError('Abstract method "generate" of class "Button" cannot be used directly');
     }
 }

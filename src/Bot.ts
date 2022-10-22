@@ -308,7 +308,7 @@ class BotManager {
     }
 
     async initClient() {
-        this.client = new Client({ intents: ["DIRECT_MESSAGES", "GUILD_VOICE_STATES"], partials: ['CHANNEL'] });
+        this.client = new Client({ intents: ["DIRECT_MESSAGES", "GUILD_VOICE_STATES", "GUILDS"], partials: ['CHANNEL'] });
 
         this.client.on('ready', this.onReady.bind(this));
         this.client.on('interactionCreate', this.onInteraction.bind(this));

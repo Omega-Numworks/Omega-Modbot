@@ -35,3 +35,6 @@ context_menu.moderate.reply.submit,Valider,Submit
 context_menu.moderate.modal.comment,Commentaire,Comment
 context_menu.moderate.modal.public_comment,Commentaire publique,Public comment
 context_menu.moderate.modal.title,Plus d'informations...,More infos...
+,,
+roles.added,Rôle ajouté,Role added
+roles.removed,Rôle retiré,Role removed
