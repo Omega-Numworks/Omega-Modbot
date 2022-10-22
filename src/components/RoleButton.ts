@@ -50,13 +50,13 @@ export class RoleButton extends Button {
             await member.roles.remove(role_id);
             await interaction.reply({
                 ephemeral: true,
-                content: I18n.getI18n('roles.added', interaction.locale)
+                content: I18n.getI18n('roles.removed', interaction.locale)
             });
         } else {
             await member.roles.add(role_id);
             await interaction.reply({
                 ephemeral: true,
-                content: I18n.getI18n('roles.removed', interaction.locale)
+                content: I18n.getI18n('roles.added', interaction.locale)
             });
         }
     }
