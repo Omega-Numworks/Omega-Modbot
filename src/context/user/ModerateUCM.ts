@@ -166,9 +166,9 @@ export class ModerateUCM extends UserContextMenu {
                     new MessageEmbed()
                         .setTitle("Mod Action")
                         .setDescription(`L'utilisateur <@${user.id}> (${user.id}) a été sanctionné.\n**Sanction:** ${(sanctions as any)[ss] ?? '????'}`)
-                        .addField("Règle(s) concernée(s)", `${'```\n'}${rules.map((value: Rule) => `${value.identifier}. ${value.content}`).join('\n')}${'\n```'}`)
-                        .addField("Commentaire", public_comment.length === 0 ? '*Pas de commentaire*' : comment.split('\n').map((v) => '> ' + v).join('\n'))
-                        .addField("Commentaire publique", public_comment.length === 0 ? '*Pas de commentaire*' : public_comment.split('\n').map((v) => '> ' + v).join('\n'))
+                        .addFields({name: "Règle(s) concernée(s)", value: `${'```\n'}${rules.map((value: Rule) => `${value.identifier}. ${value.content}`).join('\n')}${'\n```'}`})
+                        .addFields({name: "Commentaire", value: public_comment.length === 0 ? '*Pas de commentaire*' : comment.split('\n').map((v) => '> ' + v).join('\n')})
+                        .addFields({name: "Commentaire publique", value: public_comment.length === 0 ? '*Pas de commentaire*' : public_comment.split('\n').map((v) => '> ' + v).join('\n')})
                         .addFields(error ? [
                             {
                                 name: "Erreur",
