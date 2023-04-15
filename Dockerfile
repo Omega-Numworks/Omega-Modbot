@@ -9,7 +9,7 @@ RUN apk add --no-cache libtool make autoconf automake alpine-sdk python3
 # Install dependencies
 COPY package.json ./
 COPY yarn.lock ./
-RUN yarn install
+RUN yarn install --frozen-lockfile
 
 # Build
 COPY . ./
