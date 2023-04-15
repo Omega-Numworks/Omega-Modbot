@@ -196,7 +196,9 @@ export class ModerateUCM extends UserContextMenu {
                     try {
                         const member = await guild.members.fetch(user.id);
                         await member.kick(public_comment);
-                    } catch (e: any) { }
+                    } catch (e: any) {
+                        // Ignore error
+                    }
                     break;
                 case "to":
                     try {
