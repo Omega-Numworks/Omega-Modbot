@@ -50,13 +50,17 @@ class BansManager {
                 const guild = await Bot.getClient().guilds.fetch(guildid);
                 try {
                     await guild.bans.remove(action.discordId);
-                } catch (e: any) { }
+                } catch (e: any) {
+                    // Ignore error
+                }
             }
 
             try {
                 const user = await Bot.getClient().users.fetch(action.discordId);
                 await user.send("Toutes vos sanctions en cours ont expiré.");
-            } catch (e: any) { }
+            } catch (e: any) {
+                // Ignore error
+            }
 
             await Action.update({
                 unbanned: true

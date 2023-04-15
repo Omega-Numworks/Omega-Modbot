@@ -196,7 +196,9 @@ export class ModerateUCM extends UserContextMenu {
                     try {
                         const member = await guild.members.fetch(user.id);
                         await member.kick(public_comment);
-                    } catch (e: any) { }
+                    } catch (e: any) {
+                        // Ignore error
+                    }
                     break;
                 case "to":
                     try {
@@ -234,7 +236,7 @@ export class ModerateUCM extends UserContextMenu {
                         .setCustomId('public_comment')
                         .setLabel(I18n.getI18n('context_menu.moderate.modal.public_comment', interaction))
                         .setStyle(TextInputStyles.PARAGRAPH)
-                        .setMaxLength(128)
+                        .setMaxLength(2048)
                 )
             )
             .setCustomId(`cmm,${discord_id},${selected_rules?.join(':') ?? ''},${selected_sanction ?? ''}`)

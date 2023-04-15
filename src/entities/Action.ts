@@ -59,7 +59,7 @@ export const initAction = (sequelize: Sequelize) => {
             defaultValue: ''
         },
         publicComment: {
-            type: DataTypes.STRING(128),
+            type: DataTypes.STRING(2048),
             defaultValue: ''
         },
     }, {
