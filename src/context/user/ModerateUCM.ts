@@ -156,7 +156,7 @@ export class ModerateUCM extends UserContextMenu {
                     `${'```\n'}${rules.map((value: Rule) => `${value.identifier}. ${value.content}`).join('\n')}${'\n```'}\n` +
                     `Commentaire de la modération:\n` +
                     (public_comment.length === 0 ? '*Pas de commentaire*' : (public_comment.split('\n').map((v) => '> ' + v).join('\n'))) + '\n' +
-                    `Pour toute plainte ou contestation, veuillez contacter @Quentin#0793.`
+                    `Pour toute plainte ou contestation, veuillez contacter @quentin.gg.`
             });
         } catch (e: any) { error = true }
 
